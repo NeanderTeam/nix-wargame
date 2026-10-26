@@ -1,0 +1,337 @@
+#!/usr/bin/env bash
+# nix-wargame: a Bandit-style wargame that teaches the Nix package manager.
+# Honor system: the lock/unlock logic is local and trivially bypassable.
+set -euo pipefail
+
+SELF=$(readlink -f "${BASH_SOURCE[0]}")
+ROOT=${WARGAME_ROOT:-$(dirname "$SELF")}
+LEVELS_DIR=$ROOT/levels
+STATE_DIR=${XDG_STATE_HOME:-${HOME:?HOME is not set}/.local/state}/nix-wargame
+CACHE_DIR=${XDG_CACHE_HOME:-${HOME:?HOME is not set}/.cache}/nix-wargame
+PROGRESS=$STATE_DIR/progress
+PLAY_ROOT=$CACHE_DIR/play
+FLAKE_NIX_CONFIG='experimental-features = nix-command flakes'
+
+if [[ -t 1 ]]; then
+  B=$'\033[1m' G=$'\033[32m' Y=$'\033[33m' R=$'\033[31m' D=$'\033[2m' N=$'\033[0m'
+else
+  B='' G='' Y='' R='' D='' N=''
+fi
+
+die() { printf '%s\n' "${R}error:${N} $*" >&2; exit 1; }
+info() { printf '%s\n' "$*"; }
+
+usage() {
+  cat <<USAGE
+${B}nix-wargame${N} - learn Nix by capturing flags
+
+Usage: wargame <command> [args]
+
+  status              progress table
+  start [N] [--fresh] show level N (default: your current level) and prepare its
+                      scratch dir; --fresh recreates the scratch dir
+  show N              print the GOAL of an unlocked level
+  hint N              reveal the next hint for level N (remembered)
+  submit N FLAG       check a flag; passing unlocks level N+1
+  where [N]           print the scratch dir of level N
+  env                 print 'export NIX_CONFIG=...' to enable flakes in your shell
+  doctor              check your Nix setup
+  reset               forget your progress (asks first)
+
+Progress:  $PROGRESS
+Scratch:   $PLAY_ROOT/NN
+(Level locking is local and honor-system based.)
+USAGE
+}
+
+# ---- helpers ---------------------------------------------------------------
+
+norm_id() {
+  [[ ${1:-} =~ ^[0-9]{1,2}$ ]] || die "level must be a number (got '${1:-}')"
+  printf '%02d' "$((10#$1))"
+}
+
+level_ids() {
+  local d
+  for d in "$LEVELS_DIR"/[0-9][0-9]; do
+    [[ -d $d ]] && basename "$d"
+  done
+}
+
+need_level() {
+  [[ -d $LEVELS_DIR/$1 ]] || die "level $1 does not exist"
+}
+
+is_passed() {
+  [[ -f $PROGRESS ]] && grep -q "^passed $1 " "$PROGRESS"
+}
+
+is_unlocked() {
+  local n=$((10#$1))
+  [[ $n -eq 0 ]] && return 0
+  is_passed "$(printf '%02d' $((n - 1)))"
+}
+
+need_unlocked() {
+  need_level "$1"
+  is_unlocked "$1" || die "level $1 is locked. Pass level $(printf '%02d' $(($((10#$1)) - 1))) first."
+}
+
+hints_used() {
+  local n=0
+  if [[ -f $PROGRESS ]]; then
+    n=$(grep "^hints $1 " "$PROGRESS" | tail -n1 | cut -d' ' -f3 || true)
+  fi
+  printf '%s' "${n:-0}"
+}
+
+set_hints() {
+  mkdir -p "$STATE_DIR"
+  local tmp
+  tmp=$(mktemp "$STATE_DIR/progress.XXXXXX")
+  : >"$tmp"
+  if [[ -f $PROGRESS ]]; then
+    grep -v "^hints $1 " "$PROGRESS" >"$tmp" || true
+  fi
+  printf 'hints %s %s\n' "$1" "$2" >>"$tmp"
+  mv "$tmp" "$PROGRESS"
+}
+
+mark_passed() {
+  mkdir -p "$STATE_DIR"
+  printf 'passed %s %s\n' "$1" "$(date +%s)" >>"$PROGRESS"
+}
+
+current_level() {
+  local id
+  while read -r id; do
+    if ! is_passed "$id"; then
+      printf '%s' "$id"
+      return 0
+    fi
+  done < <(level_ids)
+  return 1
+}
+
+level_title() { head -n1 "$LEVELS_DIR/$1/title" 2>/dev/null || printf '?'; }
+level_tier() { head -n1 "$LEVELS_DIR/$1/tier" 2>/dev/null || printf '?'; }
+
+# Copy level files + shared files into DIR and fill in the nixpkgs pin.
+prepare_dir() {
+  local id=$1 dir=$2 rev hash url f
+  need_level "$id"
+  mkdir -p "$dir"
+  [[ -d $ROOT/common ]] && cp -R "$ROOT/common/." "$dir/"
+  [[ -d $LEVELS_DIR/$id/files ]] && cp -R "$LEVELS_DIR/$id/files/." "$dir/"
+  chmod -R u+w "$dir"
+  # shellcheck disable=SC1091
+  rev=$(. "$ROOT/common/pin.env" && printf '%s' "$NIXPKGS_REV")
+  # shellcheck disable=SC1091
+  hash=$(. "$ROOT/common/pin.env" && printf '%s' "$NIXPKGS_HASH")
+  url="https://github.com/NixOS/nixpkgs/archive/$rev.tar.gz"
+  while IFS= read -r f; do
+    sed -i -e "s|@NIXPKGS_REV@|$rev|g" -e "s|@NIXPKGS_HASH@|$hash|g" \
+      -e "s|@NIXPKGS_URL@|$url|g" "$f"
+  done < <(grep -rIlF '@NIXPKGS_' "$dir" || true)
+}
+
+play_dir() { printf '%s/%s' "$PLAY_ROOT" "$1"; }
+
+# ---- commands --------------------------------------------------------------
+
+cmd_status() {
+  local id total=0 done=0 state cur=''
+  cur=$(current_level || true)
+  printf '%s\n' "${B}LVL  TIER                  TITLE                     STATE     HINTS${N}"
+  while read -r id; do
+    total=$((total + 1))
+    if is_passed "$id"; then
+      state="${G}passed${N}"
+      done=$((done + 1))
+    elif [[ $id == "$cur" ]]; then
+      state="${Y}current${N}"
+    else
+      state="${D}locked${N}"
+    fi
+    printf '%-4s %-21s %-25s %-17s %s\n' "$id" "$(level_tier "$id")" "$(level_title "$id")" "$state" "$(hints_used "$id")"
+  done < <(level_ids)
+  printf '\nPassed %s/%s levels.\n' "$done" "$total"
+}
+
+cmd_show() {
+  local id
+  id=$(norm_id "${1:-}")
+  need_unlocked "$id"
+  cat "$LEVELS_DIR/$id/GOAL.md"
+}
+
+cmd_start() {
+  local id='' fresh=0 a dir
+  for a in "$@"; do
+    case $a in
+      --fresh) fresh=1 ;;
+      *) id=$(norm_id "$a") ;;
+    esac
+  done
+  if [[ -z $id ]]; then
+    id=$(current_level) || { info "You finished every level. Congratulations!"; return 0; }
+  fi
+  need_unlocked "$id"
+  dir=$(play_dir "$id")
+  if [[ $fresh -eq 1 && -d $dir ]]; then
+    # Only ever delete a directory that lives directly inside our play root.
+    [[ $(dirname "$dir") == "$PLAY_ROOT" && -f $dir/.wargame-level ]] || die "refusing to delete $dir"
+    rm -rf -- "$dir"
+  fi
+  if [[ ! -d $dir ]]; then
+    prepare_dir "$id" "$dir"
+    printf '%s\n' "$id" >"$dir/.wargame-level"
+  fi
+  cat "$LEVELS_DIR/$id/GOAL.md"
+  printf '\n%s\n' "${B}Work dir:${N} $dir"
+  printf '%s\n' "  cd \"\$(wargame where $id)\"   # (use ./wargame if it is not on your PATH)"
+}
+
+cmd_where() {
+  local id
+  if [[ -n ${1:-} ]]; then id=$(norm_id "$1"); else id=$(current_level) || die "no current level"; fi
+  need_unlocked "$id"
+  [[ -d $(play_dir "$id") ]] || die "no scratch dir yet: run 'wargame start $id'"
+  play_dir "$id"
+  printf '\n'
+}
+
+cmd_hint() {
+  local id n total
+  id=$(norm_id "${1:-}")
+  need_unlocked "$id"
+  total=$(find "$LEVELS_DIR/$id/hints" -maxdepth 1 -name '[0-9].md' 2>/dev/null | wc -l)
+  n=$(hints_used "$id")
+  if [[ $n -ge $total ]]; then
+    info "No more hints for level $id ($n/$total shown)."
+    info "Re-read the docs linked in GOAL.md. A spoiler-laden solutions/ directory exists if you give up."
+    return 0
+  fi
+  n=$((n + 1))
+  set_hints "$id" "$n"
+  printf '%s\n\n' "${B}Hint $n/$total${N}"
+  cat "$LEVELS_DIR/$id/hints/$n.md"
+}
+
+cmd_submit() {
+  local id flag want got found
+  id=$(norm_id "${1:-}")
+  shift || true
+  [[ $# -ge 1 ]] || die "usage: wargame submit N FLAG"
+  need_unlocked "$id"
+  flag="$*"
+  # Accept pasted noise around the flag.
+  found=$(printf '%s' "$flag" | grep -o 'FLAG{[^}]*}' | head -n1 || true)
+  if [[ -n $found ]]; then flag=$found; fi
+  want=$(cut -d' ' -f1 "$LEVELS_DIR/$id/flag.sha256")
+  got=$(printf '%s' "$flag" | sha256sum | cut -d' ' -f1)
+  if [[ $got != "$want" ]]; then
+    info "${R}Wrong flag.${N} Flags look like FLAG{...}; copy the whole thing."
+    return 1
+  fi
+  if is_passed "$id"; then
+    info "${G}Correct${N} (level $id was already passed)."
+  else
+    mark_passed "$id"
+    info "${G}Correct! Level $id passed.${N}"
+  fi
+  if [[ -d $LEVELS_DIR/$(printf '%02d' $((10#$id + 1))) ]]; then
+    info "Next: wargame start $(printf '%02d' $((10#$id + 1)))"
+  else
+    info "That was the last level. You know your Nix."
+  fi
+}
+
+cmd_env() {
+  printf "export NIX_CONFIG='%s'\n" "$FLAKE_NIX_CONFIG"
+}
+
+cmd_reset() {
+  local ans=''
+  if [[ ${1:-} == --yes ]]; then
+    ans=y
+  else
+    printf 'Delete your progress file (%s)? [y/N] ' "$PROGRESS"
+    read -r ans || true
+  fi
+  if [[ $ans == y || $ans == Y ]]; then
+    rm -f -- "$PROGRESS"
+    info "Progress reset. Scratch dirs under $PLAY_ROOT were left alone."
+  else
+    info "Nothing changed."
+  fi
+}
+
+cmd_doctor() {
+  local bad=0 v out
+  ok() { printf '%s\n' "${G}[ok]${N}   $*"; }
+  warn() { printf '%s\n' "${Y}[warn]${N} $*"; }
+  fail() { printf '%s\n' "${R}[fail]${N} $*"; bad=1; }
+
+  if ! command -v nix >/dev/null 2>&1; then
+    fail "nix not found in PATH"
+    return 1
+  fi
+  v=$(nix --version | grep -Eo '[0-9]+(\.[0-9]+)+' | head -n1)
+  if [[ $(printf '%s\n%s\n' 2.18 "$v" | sort -V | head -n1) == 2.18 ]]; then
+    ok "nix $v (>= 2.18)"
+  else
+    fail "nix $v is older than 2.18"
+  fi
+
+  if out=$(NIX_CONFIG=$FLAKE_NIX_CONFIG nix eval --expr '1 + 1' 2>&1) && [[ $out == 2 ]]; then
+    ok "nix-command + flakes work when NIX_CONFIG is set (wargame does this itself)"
+  else
+    fail "could not enable nix-command/flakes via NIX_CONFIG: $out"
+  fi
+
+  out=$(nix --extra-experimental-features nix-command config show experimental-features 2>/dev/null || true)
+  if [[ $out == *flakes* ]]; then
+    ok "flakes enabled in your own shell config"
+  else
+    warn "flakes are not enabled in your shell; flake levels need: eval \"\$($0 env)\""
+  fi
+
+  if timeout 6 bash -c 'exec 3<>/dev/tcp/cache.nixos.org/443' 2>/dev/null; then
+    ok "network: cache.nixos.org reachable (needed by levels marked NETWORK)"
+  else
+    warn "cache.nixos.org not reachable; levels marked NETWORK will not work"
+  fi
+
+  out=$(nix --extra-experimental-features nix-command config show sandbox 2>/dev/null || true)
+  case $out in
+    true | relaxed) ok "build sandbox: $out" ;;
+    *) warn "build sandbox is '${out:-unknown}'; derivation levels assume it is on" ;;
+  esac
+
+  out=$(nix --extra-experimental-features nix-command store info 2>&1 | head -n1 || true)
+  ok "store: ${out:-unknown}"
+  if mkdir -p "$PLAY_ROOT" 2>/dev/null; then ok "scratch dir writable: $PLAY_ROOT"; else fail "cannot create $PLAY_ROOT"; fi
+  return "$bad"
+}
+
+main() {
+  local cmd=${1:-help}
+  shift || true
+  case $cmd in
+    status) cmd_status ;;
+    start) cmd_start "$@" ;;
+    show) cmd_show "$@" ;;
+    hint) cmd_hint "$@" ;;
+    submit) cmd_submit "$@" ;;
+    where) cmd_where "$@" ;;
+    env) cmd_env ;;
+    doctor) cmd_doctor ;;
+    reset) cmd_reset "$@" ;;
+    _prepare) prepare_dir "$(norm_id "${1:-}")" "${2:?dir required}" ;; # internal: used by tools/
+    help | -h | --help) usage ;;
+    *) usage >&2; exit 2 ;;
+  esac
+}
+
+main "$@"

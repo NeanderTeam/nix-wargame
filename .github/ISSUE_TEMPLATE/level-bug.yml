@@ -1,0 +1,40 @@
+name: Level bug
+description: A level is broken, unclear, or has an unintended shortcut
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please do **not** paste flags or full solutions here. Describe the problem
+        without spoilers.
+  - type: input
+    id: level
+    attributes:
+      label: Level number and title
+    validations:
+      required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: What went wrong?
+      description: Error output is useful (remove anything spoilery).
+    validations:
+      required: true
+  - type: textarea
+    id: doctor
+    attributes:
+      label: Output of `./wargame doctor`
+      render: text
+    validations:
+      required: true
+  - type: dropdown
+    id: kind
+    attributes:
+      label: Kind of problem
+      options:
+        - Level cannot be completed
+        - Flag mismatch / wrong flag accepted
+        - Unintended shortcut (spoiler-free description please)
+        - Unclear instructions
+        - Pinned nixpkgs / network issue
+        - Other

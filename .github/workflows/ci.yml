@@ -1,0 +1,25 @@
+name: ci
+on:
+  push:
+  pull_request:
+  schedule:
+    - cron: "0 6 * * 1" # weekly: catches rot (pin, cache, Nix changes)
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: DeterminateSystems/nix-installer-action@v16
+      - name: shellcheck + offline self-test
+        run: |
+          nix --extra-experimental-features 'nix-command flakes' develop -c bash -c '
+            shellcheck wargame tools/*.sh && tools/self-test.sh'
+      - name: every solution reproduces its flag
+        run: |
+          nix --extra-experimental-features 'nix-command flakes' develop -c tools/verify-solutions.sh
+      - name: unsolved levels do not leak their flag
+        run: |
+          nix --extra-experimental-features 'nix-command flakes' develop -c tools/verify-initial-states.sh
+      - name: flake check
+        run: nix --extra-experimental-features 'nix-command flakes' flake check

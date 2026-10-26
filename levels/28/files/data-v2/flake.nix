@@ -1,0 +1,1 @@
+{ outputs = _: { payload = "fresh"; }; }

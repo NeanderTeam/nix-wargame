@@ -1,0 +1,7 @@
+result
+result-*
+*.swp
+.direnv/
+# local scratch / game state never belongs in the repo
+play/
+progress

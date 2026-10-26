@@ -1,0 +1,2 @@
+. ./pin.env
+nix-shell -p hello -I nixpkgs="$NIXPKGS_URL" --run 'hello --version | head -n1' | ./check.sh
