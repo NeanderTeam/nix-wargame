@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://nix-wargame.cuevaneander.tech/sitemap.xml

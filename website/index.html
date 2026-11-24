@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>nix-wargame: learn Nix by doing, 29 levels</title>
+  <meta name="description" content="A wargame that teaches the Nix package manager. 29 short levels, one idea each. What you build with Nix is the flag that unlocks the next level.">
+  <meta name="theme-color" content="#1d2023">
+  <meta property="og:title" content="nix-wargame">
+  <meta property="og:description" content="29 short levels. Each one asks you to do something real in Nix. What you produce is the flag.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://nix-wargame.cuevaneander.tech/">
+  <meta property="og:image" content="https://nix-wargame.cuevaneander.tech/assets/img/og.jpg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="A rusted shipping container door with the stencilled text NIX WARGAME and the nix run command on its lock bar.">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="canonical" href="https://nix-wargame.cuevaneander.tech/">
+  <link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
+  <link rel="preload" href="assets/fonts/big-shoulders-stencil-display-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="assets/css/site.css">
+</head>
+<body>
+  <a class="skip" href="#yard-sec">Skip to the levels</a>
+
+  <header class="bar">
+    <div class="wrap">
+      <a class="brand" href="#top">nix-wargame</a>
+      <nav aria-label="Sections">
+        <a href="#yard-sec">The yard</a>
+        <a href="#play">How it plays</a>
+        <a href="#seals">Safety</a>
+        <a href="#classes">Classes</a>
+        <a href="https://github.com/NeanderTeam/nix-wargame">GitHub</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="top">
+    <section class="door steel is-rust castings" aria-labelledby="h1">
+      <p class="door-id" aria-hidden="true">NWGU 000028 9<span>22G1 &middot; 29 levels</span></p>
+      <div class="door-copy">
+        <h1 id="h1"><span>Nix</span><span>Wargame</span></h1>
+        <p>29 short levels. Each asks for something real in Nix. What you produce is the flag.</p>
+      </div>
+      <div>
+        <div class="lockbar"><code id="cmd-hero">nix --extra-experimental-features 'nix-command flakes' run github:neanderteam/nix-wargame -- <b>start</b></code><button type="button" class="copy" data-copy="cmd-hero">Copy</button></div>
+        <p class="door-note">Needs Nix and a shell. No root. No flakes? <a href="#play">Clone the repo and run <code>./wargame</code></a>.</p>
+      </div>
+    </section>
+    <div class="peek" aria-hidden="true"><i class="steel is-rust"></i><i class="steel is-ochre"></i><i class="steel is-teal"></i><i class="steel is-moss"></i><i class="steel is-blue"></i><i class="steel is-rust"></i><i class="steel is-ochre"></i><i class="steel is-teal"></i><i class="steel is-blue"></i></div>
+
+    <section class="yard-sec" id="yard-sec" aria-labelledby="yard-h">
+      <div class="wrap">
+        <div class="sec-head">
+          <h2 id="yard-h">29 levels, nine tiers</h2>
+          <p>Each container is one level, one idea. Pick one to read its manifest. Goals and hints stay in the game; this is only the map.</p>
+        </div>
+        <div class="yard-grid">
+          <div class="yard" id="yard">
+<section class="tier" data-tier="1" aria-labelledby="tier-1">
+  <div class="tier-label"><h3 id="tier-1">Tier 1 Basics/CLI</h3><span class="range">levels 00-03</span><p class="learn">evaluating, arguments, the new nix CLI, the repl</p></div>
+  <div class="stack"><button type="button" class="box steel castings is-rust" aria-pressed="false" data-n="00" data-tier="1" data-tier-name="Basics/CLI" data-title="first-eval" data-learn="evaluation vs building" data-tool="nix-instantiate --eval"><span class="n">00</span><span class="t">first-eval</span></button><button type="button" class="box steel castings is-rust" aria-pressed="false" data-n="01" data-tier="1" data-tier-name="Basics/CLI" data-title="arguments" data-learn="functions as files, typed arguments" data-tool="--arg, --argstr"><span class="n">01</span><span class="t">arguments</span></button><button type="button" class="box steel castings is-rust" aria-pressed="false" data-n="02" data-tier="1" data-tier-name="Basics/CLI" data-title="new-cli" data-learn="experimental features, unified CLI" data-tool="nix eval, --extra-experimental-features"><span class="n">02</span><span class="t">new-cli</span></button><button type="button" class="box steel castings is-rust" aria-pressed="false" data-n="03" data-tier="1" data-tier-name="Basics/CLI" data-title="repl" data-learn="interactive exploration" data-tool="nix repl, :l, builtins"><span class="n">03</span><span class="t">repl</span></button></div>
+</section>
+<section class="tier" data-tier="2" aria-labelledby="tier-2">
+  <div class="tier-label"><h3 id="tier-2">Tier 2 Language</h3><span class="range">levels 04-07</span><p class="learn">syntax errors, laziness, merging and asserts, pinned nixpkgs</p></div>
+  <div class="stack"><button type="button" class="box steel castings is-ochre" aria-pressed="false" data-n="04" data-tier="2" data-tier-name="Language" data-title="syntax-errors" data-learn="reading evaluation errors" data-tool="let, ;, builtins"><span class="n">04</span><span class="t">syntax-errors</span></button><button type="button" class="box steel castings is-ochre" aria-pressed="false" data-n="05" data-tier="2" data-tier-name="Language" data-title="laziness" data-learn="lazy evaluation" data-tool="-A, --strict, throw"><span class="n">05</span><span class="t">laziness</span></button><button type="button" class="box steel castings is-ochre" aria-pressed="false" data-n="06" data-tier="2" data-tier-name="Language" data-title="merge-and-assert" data-learn="`//` vs deep merge, `++`, assertions" data-tool="assert, import"><span class="n">06</span><span class="t">merge-and-assert</span></button><button type="button" class="box steel castings is-ochre" aria-pressed="false" data-n="07" data-tier="2" data-tier-name="Language" data-title="pinned-nixpkgs" data-learn="reproducible nixpkgs" data-tool="fetchTarball, lib"><span class="n">07</span><span class="t">pinned-nixpkgs</span></button></div>
+</section>
+<section class="tier" data-tier="3" aria-labelledby="tier-3">
+  <div class="tier-label"><h3 id="tier-3">Tier 3 Shells &amp; ad-hoc</h3><span class="range">levels 08-10</span><p class="learn">nix-shell -p, shell.nix, --pure</p></div>
+  <div class="stack"><button type="button" class="box steel castings is-teal" aria-pressed="false" data-n="08" data-tier="3" data-tier-name="Shells &amp; ad-hoc" data-title="ad-hoc-shell" data-learn="ad-hoc environments" data-tool="nix-shell -p, -I"><span class="n">08</span><span class="t">ad-hoc-shell</span></button><button type="button" class="box steel castings is-teal" aria-pressed="false" data-n="09" data-tier="3" data-tier-name="Shells &amp; ad-hoc" data-title="shell-nix" data-learn="declarative dev environments" data-tool="mkShell"><span class="n">09</span><span class="t">shell-nix</span></button><button type="button" class="box steel castings is-teal" aria-pressed="false" data-n="10" data-tier="3" data-tier-name="Shells &amp; ad-hoc" data-title="pure-shell" data-learn="environment purity" data-tool="nix-shell --pure, --keep"><span class="n">10</span><span class="t">pure-shell</span></button></div>
+</section>
+<section class="tier" data-tier="4" aria-labelledby="tier-4">
+  <div class="tier-label"><h3 id="tier-4">Tier 4 Derivations</h3><span class="range">levels 11-14</span><p class="learn">raw derivations, build phases, reading failures, fixed-output</p></div>
+  <div class="stack"><button type="button" class="box steel castings is-moss" aria-pressed="false" data-n="11" data-tier="4" data-tier-name="Derivations" data-title="raw-derivation" data-learn="the derivation primitive" data-tool="builtins.derivation, $out"><span class="n">11</span><span class="t">raw-derivation</span></button><button type="button" class="box steel castings is-moss" aria-pressed="false" data-n="12" data-tier="4" data-tier-name="Derivations" data-title="build-phases" data-learn="stdenv phases, shebang patching" data-tool="mkDerivation, installPhase"><span class="n">12</span><span class="t">build-phases</span></button><button type="button" class="box steel castings is-moss" aria-pressed="false" data-n="13" data-tier="4" data-tier-name="Derivations" data-title="fix-the-build" data-learn="reading build failures" data-tool="nix-build, nix log"><span class="n">13</span><span class="t">fix-the-build</span></button><button type="button" class="box steel castings is-moss" aria-pressed="false" data-n="14" data-tier="4" data-tier-name="Derivations" data-title="fixed-output" data-learn="fixed-output derivations, hashes" data-tool="outputHash, fakeHash"><span class="n">14</span><span class="t">fixed-output</span></button></div>
+</section>
+<section class="tier" data-tier="5" aria-labelledby="tier-5">
+  <div class="tier-label"><h3 id="tier-5">Tier 5 Packaging</h3><span class="range">levels 15-16</span><p class="learn">writeShellApplication, callPackage</p></div>
+  <div class="stack"><button type="button" class="box steel castings is-blue" aria-pressed="false" data-n="15" data-tier="5" data-tier-name="Packaging" data-title="shell-application" data-learn="trivial builders, runtime deps" data-tool="writeShellApplication"><span class="n">15</span><span class="t">shell-application</span></button><button type="button" class="box steel castings is-blue" aria-pressed="false" data-n="16" data-tier="5" data-tier-name="Packaging" data-title="callpackage" data-learn="dependency injection" data-tool="callPackage"><span class="n">16</span><span class="t">callpackage</span></button></div>
+</section>
+<section class="tier" data-tier="6" aria-labelledby="tier-6">
+  <div class="tier-label"><h3 id="tier-6">Tier 6 Flakes</h3><span class="range">levels 17-20</span><p class="learn">outputs, --override-input, apps, nix develop</p></div>
+  <div class="stack"><button type="button" class="box steel castings is-rust" aria-pressed="false" data-n="17" data-tier="6" data-tier-name="Flakes" data-title="flake-outputs" data-learn="flake schema, inspection" data-tool="nix flake show, nix eval, nix build"><span class="n">17</span><span class="t">flake-outputs</span></button><button type="button" class="box steel castings is-rust" aria-pressed="false" data-n="18" data-tier="6" data-tier-name="Flakes" data-title="override-input" data-learn="inputs and lock" data-tool="--override-input, path: refs"><span class="n">18</span><span class="t">override-input</span></button><button type="button" class="box steel castings is-rust" aria-pressed="false" data-n="19" data-tier="6" data-tier-name="Flakes" data-title="flake-app" data-learn="flake apps" data-tool="nix run, apps.&lt;system&gt;"><span class="n">19</span><span class="t">flake-app</span></button><button type="button" class="box steel castings is-rust" aria-pressed="false" data-n="20" data-tier="6" data-tier-name="Flakes" data-title="flake-devshell" data-learn="flake dev shells" data-tool="nix develop, devShells"><span class="n">20</span><span class="t">flake-devshell</span></button></div>
+</section>
+<section class="tier" data-tier="7" aria-labelledby="tier-7">
+  <div class="tier-label"><h3 id="tier-7">Tier 7 Overlays &amp; overrides</h3><span class="range">levels 21-23</span><p class="learn">.override, .overrideAttrs, overlays</p></div>
+  <div class="stack"><button type="button" class="box steel castings is-ochre" aria-pressed="false" data-n="21" data-tier="7" data-tier-name="Overlays &amp; overrides" data-title="override" data-learn="argument overrides" data-tool=".override"><span class="n">21</span><span class="t">override</span></button><button type="button" class="box steel castings is-ochre" aria-pressed="false" data-n="22" data-tier="7" data-tier-name="Overlays &amp; overrides" data-title="override-attrs" data-learn="attribute overrides, hooks" data-tool=".overrideAttrs, postInstall"><span class="n">22</span><span class="t">override-attrs</span></button><button type="button" class="box steel castings is-ochre" aria-pressed="false" data-n="23" data-tier="7" data-tier-name="Overlays &amp; overrides" data-title="overlay" data-learn="overlays" data-tool="final: prev:"><span class="n">23</span><span class="t">overlay</span></button></div>
+</section>
+<section class="tier" data-tier="8" aria-labelledby="tier-8">
+  <div class="tier-label"><h3 id="tier-8">Tier 8 Store internals</h3><span class="range">levels 24-27</span><p class="learn">closures, content addressing, profiles, GC roots</p></div>
+  <div class="stack"><button type="button" class="box steel castings is-teal" aria-pressed="false" data-n="24" data-tier="8" data-tier-name="Store internals" data-title="closure" data-learn="runtime dependencies" data-tool="nix-store -q --references/-R"><span class="n">24</span><span class="t">closure</span></button><button type="button" class="box steel castings is-teal" aria-pressed="false" data-n="25" data-tier="8" data-tier-name="Store internals" data-title="content-address" data-learn="store paths" data-tool="nix-store --add"><span class="n">25</span><span class="t">content-address</span></button><button type="button" class="box steel castings is-teal" aria-pressed="false" data-n="26" data-tier="8" data-tier-name="Store internals" data-title="profiles" data-learn="generations and rollback" data-tool="nix-env --profile"><span class="n">26</span><span class="t">profiles</span></button><button type="button" class="box steel castings is-teal" aria-pressed="false" data-n="27" data-tier="8" data-tier-name="Store internals" data-title="gc-roots" data-learn="garbage collector roots" data-tool="nix-build -o, --query --roots"><span class="n">27</span><span class="t">gc-roots</span></button></div>
+</section>
+<section class="tier" data-tier="9" aria-labelledby="tier-9">
+  <div class="tier-label"><h3 id="tier-9">Tier 9 Boss</h3><span class="range">levels 28</span><p class="learn">three earlier lessons in one broken flake</p></div>
+  <div class="stack"><button type="button" class="box boss" aria-pressed="false" data-n="28" data-tier="9" data-tier-name="Boss" data-title="boss" data-learn="tiers 5, 6 and 7 combined" data-tool="everything above"><span class="n">28</span><span class="t">boss</span></button></div>
+</section>
+          </div>
+          <aside class="manifest" id="manifest" aria-live="polite" aria-label="Level manifest">
+            <h3>Manifest</h3>
+            <p class="m-id" data-m="id">Level 00<small data-m="title">first-eval</small></p>
+            <dl>
+              <div><dt>Tier</dt><dd data-m="tier"></dd></div>
+              <div><dt>You learn</dt><dd data-m="learn"></dd></div>
+              <div><dt>Main tool</dt><dd data-m="tool"></dd></div>
+            </dl>
+            <p class="m-note">Each level is solved in your own terminal. The answer is never in a file: it is something Nix computes, builds or fixes for you.</p>
+          </aside>
+        </div>
+      </div>
+    </section>
+
+    <section class="play" id="play" aria-labelledby="play-h">
+      <div class="wrap">
+        <div class="sec-head">
+          <h2 id="play-h">A level is a short job</h2>
+          <p>Level 00 starts with a file that looks like it hides a secret. It does not. It is a program, and the flag is what it evaluates to.</p>
+        </div>
+        <div class="play-grid">
+          <ol class="ledger">
+            <li><h3>Receive</h3><p><code>wargame start</code> prepares a scratch directory and prints the goal. Hints come one at a time with <code>wargame hint N</code>.</p></li>
+            <li><h3>Do</h3><p>Do the real Nix thing: evaluate an expression, build a derivation, fix a broken build. Level 00: evaluate <code>flag.nix</code> and keep the string it produces.</p></li>
+            <li><h3>Submit</h3><p>Send the result with <code>wargame submit N 'FLAG{...}'</code>. A correct flag unlocks level N+1.</p></li>
+          </ol>
+          <div>
+            <p class="term-title">Level 00, in your terminal</p>
+            <pre class="term" tabindex="0" aria-label="Commands for level 00"><span class="p">$</span> ./wargame doctor        <span class="c"># check your Nix setup</span>
+<span class="p">$</span> ./wargame start         <span class="c"># show level 00 and prepare it</span>
+<span class="p">$</span> nix-instantiate --eval flag.nix
+<span class="p">$</span> ./wargame submit 00 'FLAG{...}'</pre>
+            <p class="cmds">Without flakes: <code>git clone https://github.com/NeanderTeam/nix-wargame.git &amp;&amp; cd nix-wargame</code> and use <code>./wargame</code>. Commands: <code>status</code> <code>start [N] [--fresh]</code> <code>show N</code> <code>hint N</code> <code>submit N FLAG</code> <code>where [N]</code> <code>env</code> <code>doctor</code> <code>reset</code>.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="seals" id="seals" aria-labelledby="seals-h">
+      <div class="wrap">
+        <div class="sec-head">
+          <h2 id="seals-h">Sealed before it ships</h2>
+          <p>What the game will not do to your machine, and what it asks of you.</p>
+        </div>
+        <ul class="seal-list">
+          <li><h3>No root</h3><p>No level needs <code>sudo</code> or changes system config. <code>/etc/nix</code> is never touched.</p></li>
+          <li><h3>Your store, your call</h3><p>Builds add paths to your normal Nix store. The game never runs garbage collection and never touches your real profile. Remove what you like later with your own <code>nix-collect-garbage</code>.</p></li>
+          <li><h3>Network is marked</h3><p>Levels that need it say <code>Network: YES</code> in their goal and only talk to cache.nixos.org and github.com. Pinned nixpkgs is about 40 MB the first time.</p></li>
+          <li><h3>Flags are hashed</h3><p>Each level ships only a <code>flag.sha256</code>, never the flag itself. Solutions live apart in <code>solutions/</code>, so a public copy can leave them out.</p></li>
+          <li><h3>Honor system</h3><p>Level locking is a local bash script. You can edit the progress file or read the solutions. The only person you cheat is yourself.</p></li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="classes steel is-teal castings" id="classes" aria-labelledby="classes-h">
+      <div class="wrap">
+        <h2 id="classes-h">Run it as a class or a CTF</h2>
+        <div class="pace">
+          <p class="fig">8 levels per 90-minute session, one tier at a time.</p>
+          <p>Everyone plays locally, so the progress file is theirs. To track a group, ask for the <code>wargame status</code> output, or have players submit the flag of a chosen level to your own form.</p>
+          <p>Flags are identical for every player. Share them only after the event, or use a different pin per cohort. To self-host, fork the repo, change the owner in the run command and point students at <code>nix run github:&lt;your-org&gt;/nix-wargame</code>.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="close steel is-ochre castings" aria-labelledby="close-h">
+      <div class="wrap">
+        <h2 id="close-h">Open level 00</h2>
+        <div class="lockbar"><code id="cmd-close">nix --extra-experimental-features 'nix-command flakes' run github:neanderteam/nix-wargame -- <b>start</b></code><button type="button" class="copy" data-copy="cmd-close">Copy</button></div>
+        <p class="close-links">
+          <a href="https://github.com/NeanderTeam/nix-wargame">Source on GitHub</a>
+          <a href="https://github.com/NeanderTeam/nix-wargame/blob/main/docs/CURRICULUM.md">Full curriculum</a>
+          <a href="https://github.com/NeanderTeam/nix-wargame/blob/main/README.es.md">Resumen en espa&ntilde;ol</a>
+        </p>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="wrap">
+      <span>nix-wargame, MIT license.</span>
+      <span>A wargame for the Nix package manager. <a href="https://github.com/NeanderTeam/nix-wargame">GitHub</a></span>
+    </div>
+  </footer>
+
+  <script src="assets/js/app.js" defer></script>
+</body>
+</html>
