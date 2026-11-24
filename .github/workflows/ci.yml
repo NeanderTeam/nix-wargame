@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: DeterminateSystems/nix-installer-action@v16
+      - uses: cachix/install-nix-action@v31
       - name: shellcheck + offline self-test
         run: |
           nix --extra-experimental-features 'nix-command flakes' develop -c bash -c '

@@ -26,7 +26,8 @@ fi
 # Realistic player conditions: no user nix.conf, and flakes enabled only for the
 # levels that declare "Flakes needed: YES" (as a player would via `wargame env`).
 # --flakes-env enables them for every level (a player who ran `eval "$(wargame env)"`).
-export NIX_USER_CONF_FILES=/dev/null
+# The Nix installer in CI writes /etc/nix/nix.conf with flakes enabled. Isolate
+# the system config as well as user config so each level gets its declared env.
 FLAKE_CFG='experimental-features = nix-command flakes'
 # Levels that declare "Network: no" run behind a dead proxy to prove it.
 DEAD_PROXY=http://127.0.0.1:9
@@ -43,6 +44,8 @@ level_env() { # level_env <id>: prints env assignments for env(1)
 unset NIX_CONFIG
 tmp=$(mktemp -d)
 trap 'rm -rf -- "$tmp"' EXIT
+mkdir -p "$tmp/nix-conf"
+export NIX_CONF_DIR=$tmp/nix-conf NIX_USER_CONF_FILES=/dev/null
 export XDG_STATE_HOME=$tmp/state XDG_CACHE_HOME=$tmp/cache
 
 fail=0
